@@ -56,8 +56,7 @@ module.exports = model("Good", new Schema({
 		default:0
 	},
 	plu:{
-		type:Number,
-		unique:true
+		type:Number
 	},
 	statistic: {
 		type: Boolean,
