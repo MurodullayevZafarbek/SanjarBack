@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const token = require('./middleware/token');
 const path = require('path');
 const cors = require('cors');
+require('dotenv').config();
 const cookieParser = require('cookie-parser');
 
 
@@ -13,7 +14,7 @@ require('dotenv').config();
 
 const app = express();
 
-mongoose.connect('mongodb://127.0.0.1:27017/shop')
+mongoose.connect(process.env.DB)
     .then(data => {
         console.log('Database connected !');
     })
@@ -25,8 +26,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/shop')
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
 app.use(cors({
-    origin: 'http://192.168.1.112:5173', // Replace with your React app's URL
-    // origin: 'http://localhost:5173', // Replace with your React app's URL
+    origin: process.env.cors || '', // Replace with your React app's URL
     credentials: true,               // Allow credentials (cookies, etc.)
     optionsSuccessStatus: 200        // Some legacy browsers choke on 204
 }));
