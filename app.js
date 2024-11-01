@@ -36,6 +36,13 @@ app.use("/public", express.static(path.join(__dirname, 'public')))
 
 app.use("/auth", require("./router/auth"));
 
+app.get("/",async(req,res)=>{
+    res.json({
+        title:"App runs"
+    })
+})
+app.use("/mxik",require("./router/mxik"))
+
 app.use("/superadmin", token, superAdmin, require("./router/superAdmin"))
 app.use("/admin", token,limitAdmin, admin, require("./router/admin"))
 app.use("/worker", token, limitWorker,worker, require("./router/worker"))
