@@ -5,7 +5,7 @@ const User = require("../../model/User");
 exports.index = async (req, res) => {
 	try {
 		// Destructure query parameters with default values
-		let { currentPage = 0, limit = 10, archived = false, sort, eq,plu } = req.query;
+		let { currentPage = 0, limit = 10, archived = false, sort, eq, plu } = req.query;
 		// console.log(eq);
 		// console.log(plu);
 
@@ -65,6 +65,29 @@ exports.index = async (req, res) => {
 		});
 	}
 }
+exports.barcode = async (req, res) => {
+	try {
+		let good = await Good.findOne({ barcode: req.params.barcode });
+
+		if (!good) {
+			res.json({
+				status: false,
+				message: "Barcode not exist",
+			})
+		}else{
+			res.json({
+				status: true,
+				message: "Barcode exist",
+				good
+			})
+		}
+	} catch (error) {
+		res.status(500).json({
+			status: true,
+			message: "Dasturchi bilan bo`g`laning",
+		})
+	}
+}
 exports.plu = async (req, res) => {
 	try {
 		const [goods, goodsLength] = await Promise.all([
@@ -107,7 +130,7 @@ exports.show = async (req, res) => {
 }
 exports.create = async (req, res) => {
 	try {
-		let { title, realPrice, wholesale_price, barcode, goodType,plu } = req.body
+		let { title, realPrice, wholesale_price, barcode, goodType, plu } = req.body
 		if (
 			(title == null ?? undefined) ||
 			(realPrice == null || undefined) ||
@@ -137,8 +160,8 @@ exports.create = async (req, res) => {
 			})
 		}
 
-		if(goodType=="kg"){
-			if(plu.length==0){
+		if (goodType == "kg") {
+			if (plu.length == 0) {
 				console.log(1);
 
 				return res.json({
@@ -147,7 +170,7 @@ exports.create = async (req, res) => {
 				})
 			}
 			let goodPLu = await Good.findOne({ plu })
-			if(goodPLu){
+			if (goodPLu) {
 				return res.json({
 					status: false,
 					message: "Good width this plu already exsist"
