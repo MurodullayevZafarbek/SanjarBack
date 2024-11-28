@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 exports.signIn = async (req, res) => {
     try {
         let { phoneNumber, password } = req.body
+
         if ((phoneNumber == null ?? undefined) || (password == null ?? undefined)) {
             res.json({
                 status: false,
@@ -39,7 +40,7 @@ exports.signIn = async (req, res) => {
                             limit:user?.limit
                         },
                         process.env.privateKey,
-                        { expiresIn: 1 * 60 * 60 }
+                        { expiresIn: 5 * 60 * 60 }
                     )
                     res.json({
                         title: "SignIn",
