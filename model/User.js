@@ -42,4 +42,10 @@ module.exports = model("user", new Schema({
         type:Date,
         default: Date.now
     },
+    aditionalData:{
+        printerIp: String,
+        company: String,
+        address: String,
+        stir: String,
+    }
 }, { timestamps: true }))

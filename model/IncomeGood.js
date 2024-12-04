@@ -18,6 +18,7 @@ module.exports = model("IncomeGood", new Schema({
 	goods: [
 		{
 			good_id: { type: Schema.ObjectId ,ref:"Good" },
+			barcode: String ,
 			count: Number,
 			weight: Number,
 			price: Number,

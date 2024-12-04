@@ -16,6 +16,7 @@ const {
 const sold = require("../controller/worker/sold");
 const incomeGood = require("../controller/worker/incomeGood");
 const { dashboard } = require("../controller/admin/admin");
+const returnSold = require("../controller/worker/returnSold");
 const router = Router()
 
 router.get("/", dashboard)
@@ -37,6 +38,10 @@ router.put("/good/count/:id", countAdd)
 router.get("/good/sold", sold.index)
 router.post("/good/sold", sold.create)
 router.get("/good/sold/:id", sold.show)
+
+router.get("/good/returnSold", returnSold.index)
+router.post("/good/returnSold", returnSold.create)
+router.get("/good/returnSold/:id", returnSold.show)
 
 router.get("/good/income", incomeGood.index)
 router.post("/good/income", incomeGood.create)

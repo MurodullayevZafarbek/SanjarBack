@@ -1,9 +1,9 @@
 const Good = require("../../model/Good");
-const Sold = require("../../model/Sold");
-let sold = {}
-sold.index = async (req, res) => {
+const ReturnreturnSold = require("../../model/ReturnSold");
+let returnSold = {}
+returnSold.index = async (req, res) => {
 	try {
-		let { currentPage = 0, limit = 10, sort, eq, soldId, amount, createdAt } = req.query;
+		let { currentPage = 0, limit = 10, sort, eq, returnSoldId, amount, createdAt } = req.query;
 
 		currentPage = parseInt(currentPage);
 		limit = parseInt(limit);
@@ -12,9 +12,9 @@ sold.index = async (req, res) => {
 		let query = { ...req.body };
 
 		// Filter by user IDs if provided
-		if (soldId) {
-			const userIdsArray = soldId.split(",");
-			query.sold = { $in: userIdsArray };
+		if (returnSoldId) {
+			const userIdsArray = returnSoldId.split(",");
+			query.returnSold = { $in: userIdsArray };
 		}
 
 		// Filter by paymentSum
@@ -52,12 +52,12 @@ sold.index = async (req, res) => {
 		}
 
 		// Fetch payments with filters, sorting, and pagination
-		const [sold, soldLength] = await Promise.all([
-			Sold.find(query)
+		const [returnSold, returnSoldLength] = await Promise.all([
+			ReturnreturnSold.find(query)
 				.skip(limit * currentPage)
 				.limit(limit)
 				.sort(sortOptions),
-			Sold.countDocuments(query),
+				ReturnreturnSold.countDocuments(query),
 		]);
 
 		// Send response
@@ -65,11 +65,11 @@ sold.index = async (req, res) => {
 			status: true,
 			message: 'Payments fetched successfully',
 			options: {
-				soldLength,
+				returnSoldLength,
 				currentPage,
 				limit,
 			},
-			sold,
+			returnSold,
 		});
 	} catch (err) {
 		res.status(500).json({
@@ -79,17 +79,17 @@ sold.index = async (req, res) => {
 		});
 	}
 }
-sold.show = async (req, res) => {
-	let sold = await Sold.findById(req.params.id);
+returnSold.show = async (req, res) => {
+	let returnSold = await ReturnreturnSold.findById(req.params.id);
 	res.json({
 		status: true,
-		message: "Sold",
-		sold
+		message: "Return returnSold",
+		returnSold
 	})
 }
-sold.create = async (req, res) => {
+returnSold.create = async (req, res) => {
 	try {
-		let { name, goods, pay_type, sale_type, soliq, discauntAmaunt, amount } = req.body
+		let { name, goods, pay_type, amount } = req.body
 		if (
 			((goods == null ?? undefined) || goods.length == 0) ||
 			((amount == null ?? undefined) || amount == 0)
@@ -99,7 +99,7 @@ sold.create = async (req, res) => {
 				message: "Goods and Amount not founded"
 			})
 		}
-		let newSold = await Sold.create({ ...req.body, sold: req.user.id })
+		let newreturnSold = await ReturnreturnSold.create({ ...req.body, returnSold: req.user.id })
 
 		req.body.goods.forEach(async good => {
 			let dbGood = await Good.findById(good._id)
@@ -107,11 +107,11 @@ sold.create = async (req, res) => {
 			if (dbGood?.statistic == true) {
 				if (dbGood.goodType == "pcs") {
 					let count = dbGood.count
-					dbGood.count = count - good.count
+					dbGood.count = count + good.count
 					dbGood.save()
 				} else if (dbGood.goodType == "kg") {
 					weight = dbGood.weight
-					dbGood.weight = (weight - good.weight/ 10000).toFixed(2)
+					dbGood.weight = (weight + good.weight/ 10000).toFixed(2)
 					dbGood.save()
 				}
 				else {
@@ -127,11 +127,11 @@ sold.create = async (req, res) => {
 		});
 		// res.json({
 		// 	status: true,
-		// 	message: "Good Solded successfully"
+		// 	message: "Good returnSolded successfully"
 		// })
 		res.json({
 			status: false,
-			message: "Good Solded successfully"
+			message: "Good Returned successfully"
 		})
 	} catch (e) {
 		res.json({
@@ -142,4 +142,4 @@ sold.create = async (req, res) => {
 	}
 }
 
-module.exports = sold
+module.exports = returnSold
