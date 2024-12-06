@@ -120,6 +120,50 @@ exports.plu = async (req, res) => {
 		});
 	}
 }
+exports.quicGood = async (req, res) => {
+	try {
+		const [goods, goodsLength] = await Promise.all([
+			Good.aggregate([
+				{
+					$match: {
+						quicGood: { $exists: true } // Only include documents where `quicGood` exists
+					}
+				},
+				{
+					$project: {
+						title: 1,
+						price: "$wholesale_price", // Rename wholesalePrice to price
+						quicGood: 1,
+						barcode:1
+					}
+				},
+				{
+					$sort: { quicGood: 1 } // Sort by `quicGood` in ascending order
+				}
+			]),
+			Good.countDocuments({
+				quicGood: { $exists: true } // Count only documents where `quicGood` exists
+			})
+		]);
+
+		// Send response
+		res.json({
+			status: true,
+			message: "All Goods only Quic Goods",
+			options: {
+				goodsLength,
+			},
+			goods
+		});
+	} catch (err) {
+		res.status(500).json({
+			status: false,
+			message: "Error retrieving goods",
+			error: err.message
+		});
+	}
+};
+
 exports.show = async (req, res) => {
 	let good = await Good.findById(req.params.id);
 	res.json({
@@ -233,6 +277,15 @@ exports.update = async (req, res) => {
 			}
 		}
 
+		if (good?.quicGood) {
+			const existingQuicGood = await Good.findOne({ quicGood:req.body.quicGood});
+			if (existingQuicGood) {
+				return res.status(200).json({
+					status: false,
+					message: "Quic number already exsist already exists"
+				});
+			}
+		}
 		// Proceed with updating the good if no conflicts are found
 		good = await Good.findByIdAndUpdate(req.params.id, { ...req.body }, { new: true });
 

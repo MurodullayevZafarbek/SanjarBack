@@ -7,7 +7,7 @@ module.exports = model("Sold", new Schema({
     },
     pay_type: {
         type: String,
-        enum: ["card", "cash", "account"],
+        enum: ["card", "cash", "humo", "uzcard", "qarz"],
         default: "cash"
     },
     sale_type: {
@@ -23,7 +23,7 @@ module.exports = model("Sold", new Schema({
         type: Number,
         default: 0
     },
-    sold:{
+    sold: {
         type: Schema.ObjectId,
         require: true,
     },
@@ -37,6 +37,6 @@ module.exports = model("Sold", new Schema({
     ],
     amount: {
         type: Number,
-        require:true,
+        require: true,
     }
 }, { timestamps: true }))

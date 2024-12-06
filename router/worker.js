@@ -12,7 +12,8 @@ const {
     countGet,
     remove,
     plu,
-    barcode} = require("../controller/worker/goods");
+    barcode,
+    quicGood} = require("../controller/worker/goods");
 const sold = require("../controller/worker/sold");
 const incomeGood = require("../controller/worker/incomeGood");
 const { dashboard } = require("../controller/admin/admin");
@@ -27,6 +28,7 @@ router.put("/self/edit/phoneNumber", editPhoneNumber)
 router.get("/goods", index)
 router.get("/goods/barcode/:barcode", barcode)
 router.get("/goods/plu", plu)
+router.get("/goods/quicGood", quicGood)
 router.get("/goods/:id", show)
 router.post("/goods", create)
 router.put("/goods/:id", update)

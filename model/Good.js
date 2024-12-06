@@ -47,6 +47,9 @@ module.exports = model("Good", new Schema({
 		type:String,
 		enum:["kg",'pcs']
 	},
+	quicGood:{
+		type: Number,
+	},
 	count: {
 		type: Number,
 		default:0
