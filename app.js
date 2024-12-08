@@ -25,27 +25,32 @@ mongoose.connect(process.env.DB)
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
-app.use(cors({
-    origin: process.env.cors || '', // Replace with your React app's URL
-    credentials: true,               // Allow credentials (cookies, etc.)
+console.log();
+
+const corsOptions = {
+    origin: process.env.cors.split(";"), // Allowed origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+    credentials: true, // Allow cookies and authentication headers
     optionsSuccessStatus: 200        // Some legacy browsers choke on 204
-}));
+};
+
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
 app.use("/public", express.static(path.join(__dirname, 'public')))
 
 app.use("/auth", require("./router/auth"));
 
-app.get("/",async(req,res)=>{
+app.get("/", async (req, res) => {
     res.json({
-        title:"App runs"
+        title: "App runs"
     })
 })
-app.use("/mxik",require("./router/mxik"))
+app.use("/mxik", require("./router/mxik"))
 
 app.use("/superadmin", token, superAdmin, require("./router/superAdmin"))
-app.use("/admin", token,limitAdmin, admin, require("./router/admin"))
-app.use("/worker", token, limitWorker,worker, require("./router/worker"))
+app.use("/admin", token, limitAdmin, admin, require("./router/admin"))
+app.use("/worker", token, limitWorker, worker, require("./router/worker"))
 app.use("*", (req, res) => {
     res.json({
         title: 404,

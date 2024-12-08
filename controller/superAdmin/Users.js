@@ -4,13 +4,13 @@ const bcrypt = require("bcrypt")
 exports.index = async (req, res) => {
 	try {
 		// Destructure query parameters with default values
-		let { currentPage = 0, limit = 10, archived = false, sort, eq } = req.query;
+		let { currentPage = 0, limit = 10, sort, eq } = req.query;
 
 		currentPage = parseInt(currentPage);
 		limit = parseInt(limit);
 
 		// Base query for filtering archived status and role
-		let query = { role: "admin", archived };
+		let query = { role: "admin" };
 
 		// Apply equality filters using RegEx (case-insensitive)
 		if (eq) {
@@ -32,7 +32,7 @@ exports.index = async (req, res) => {
 
 		// Query the database for paginated, filtered, and sorted results
 		const [users, userLength] = await Promise.all([
-			User.find(query, "firstName lastName email phoneNumber region createdAt limit payment")
+			User.find(query, "firstName lastName email phoneNumber region createdAt limit payment archived")
 				.skip(limit * currentPage)
 				.limit(limit)
 				.sort(sortOptions),

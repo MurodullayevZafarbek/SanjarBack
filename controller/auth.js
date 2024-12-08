@@ -16,7 +16,7 @@ exports.signIn = async (req, res) => {
                 message: `phoneNumber must be a number`,
             })
         } else {
-            let user = await User.findOne({ phoneNumber })
+            let user = await User.findOne({ phoneNumber ,archived:false})
 
             if (user == null) {
                 res.json({

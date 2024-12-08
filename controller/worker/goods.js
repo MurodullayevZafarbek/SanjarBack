@@ -5,7 +5,7 @@ const User = require("../../model/User");
 exports.index = async (req, res) => {
 	try {
 		// Destructure query parameters with default values
-		let { currentPage = 0, limit = 10, archived = false, sort, eq, plu } = req.query;
+		let { currentPage = 0, limit = 10, sort, eq, plu } = req.query;
 		// console.log(eq);
 		// console.log(plu);
 
@@ -13,7 +13,7 @@ exports.index = async (req, res) => {
 		limit = parseInt(limit);
 
 		// Base query for filtering archived status and role
-		let query = { archived, adminId: req.user.adminId, $or: [], };
+		let query = { adminId: req.user.adminId, $or: [], };
 
 		if (plu) {
 			query.plu = { $eq: plu };
@@ -40,7 +40,7 @@ exports.index = async (req, res) => {
 
 		// Query the database for paginated, filtered, and sorted results
 		const [users, userLength] = await Promise.all([
-			Good.find(query, "barcode title realPrice wholesale_price count weight goodType plu")
+			Good.find(query, "barcode title realPrice wholesale_price count weight goodType plu archived")
 				.skip(limit * currentPage)
 				.limit(limit)
 				.sort(sortOptions),
@@ -67,14 +67,13 @@ exports.index = async (req, res) => {
 }
 exports.barcode = async (req, res) => {
 	try {
-		let good = await Good.findOne({ barcode: req.params.barcode });
-
+		let good = await Good.findOne({ barcode: req.params.barcode, adminId: req.user.adminId });
 		if (!good) {
 			res.json({
 				status: false,
 				message: "Barcode not exist",
 			})
-		}else{
+		} else {
 			res.json({
 				status: true,
 				message: "Barcode exist",
@@ -92,7 +91,7 @@ exports.plu = async (req, res) => {
 	try {
 		const [goods, goodsLength] = await Promise.all([
 			Good.aggregate([
-				{ $match: { goodType: "kg" } },
+				{ $match: { goodType: "kg", adminId: req.user.adminId } },
 				{
 					$project: {
 						title: 1,
@@ -122,30 +121,14 @@ exports.plu = async (req, res) => {
 }
 exports.quicGood = async (req, res) => {
 	try {
-		const [goods, goodsLength] = await Promise.all([
-			Good.aggregate([
-				{
-					$match: {
-						quicGood: { $exists: true } // Only include documents where `quicGood` exists
-					}
-				},
-				{
-					$project: {
-						title: 1,
-						price: "$wholesale_price", // Rename wholesalePrice to price
-						quicGood: 1,
-						barcode:1
-					}
-				},
-				{
-					$sort: { quicGood: 1 } // Sort by `quicGood` in ascending order
-				}
-			]),
-			Good.countDocuments({
-				quicGood: { $exists: true } // Count only documents where `quicGood` exists
-			})
-		]);
-
+		const goods = await Good.find({
+			quicGood: { $exists: true }, // Check if `quicGood` exists
+			adminId:req.user.adminId, // Match adminId with the current user's adminId
+		},["quicGood","wholesale_price","title","barcode"]);
+		const goodsLength = await Good.countDocuments({
+			quicGood: { $exists: true }, // Count only documents where `quicGood` exists
+			adminId: req.user.adminId,  // Match adminId to the current user's adminId
+		})
 		// Send response
 		res.json({
 			status: true,
@@ -195,7 +178,7 @@ exports.create = async (req, res) => {
 			createUser: req.user.id,
 			plu
 		}
-		let good = await Good.findOne({ barcode })
+		let good = await Good.findOne({ barcode, adminId: req.user.adminId })
 
 		if (good) {
 			return res.json({
@@ -258,7 +241,7 @@ exports.update = async (req, res) => {
 		const { barcode, plu } = req.body;
 
 		// Check if barcode already exists (always required)
-		const existingBarcode = await Good.findOne({ barcode, _id: { $ne: req.params.id } });
+		const existingBarcode = await Good.findOne({ barcode, _id: { $ne: req.params.id }, adminId: req.user.adminId });
 		if (existingBarcode) {
 			return res.status(200).json({
 				status: false,
@@ -268,7 +251,7 @@ exports.update = async (req, res) => {
 
 		// Check if plu exists if goodType is "kg"
 		if (good.goodType === "kg") {
-			const existingPlu = await Good.findOne({ plu, _id: { $ne: req.params.id } });
+			const existingPlu = await Good.findOne({ plu, _id: { $ne: req.params.id }, adminId: req.user.adminId });
 			if (existingPlu) {
 				return res.status(200).json({
 					status: false,
@@ -277,8 +260,8 @@ exports.update = async (req, res) => {
 			}
 		}
 
-		if (good?.quicGood) {
-			const existingQuicGood = await Good.findOne({ quicGood:req.body.quicGood});
+		if (req.body?.quicGood) {
+			const existingQuicGood = await Good.findOne({ quicGood: req.body.quicGood, adminId: req.user.adminId, _id: { $ne: req.params.id } });
 			if (existingQuicGood) {
 				return res.status(200).json({
 					status: false,

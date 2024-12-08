@@ -25,7 +25,12 @@ module.exports = model("Sold", new Schema({
     },
     sold: {
         type: Schema.ObjectId,
+        ref:"User",
         require: true,
+    },
+    adminId: {
+        type: Schema.ObjectId,
+        ref:"User",
     },
     goods: [
         {

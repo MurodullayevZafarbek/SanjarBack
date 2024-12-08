@@ -16,7 +16,7 @@ sold.index = async (req, res) => {
 			const userIdsArray = soldId.split(",");
 			query.sold = { $in: userIdsArray };
 		}
-
+		
 		// Filter by paymentSum
 		if (amount) {
 			const [min, max] = amount.split('-');
@@ -50,15 +50,55 @@ sold.index = async (req, res) => {
 			const [sortField, sortOrder] = sort.split('.');
 			sortOptions[sortField] = sortOrder === 'ABC' ? 1 : -1;
 		}
+		req.query.adminId = req.user.adminId
 
+		const pipeline = [
+			{ $match: query }, // Apply the base query filters
+
+			// Lookup to populate the 'sold' field with the 'User' details
+			{
+				$lookup: {
+					from: "users", // The name of the collection you're populating from (User model)
+					localField: "sold", // Field in the Sold document
+					foreignField: "_id", // Field in the User collection (typically _id)
+					as: "soldDetails", // The name of the resulting array field
+				},
+			},
+
+			// Optionally unwind the 'soldDetails' array if you expect a single match per document
+			{ $unwind: { path: "$soldDetails", preserveNullAndEmptyArrays: true } },
+
+			// Sort the results
+			{ $sort: sortOptions },
+
+			// Pagination
+			{ $skip: limit * currentPage },
+			{ $limit: limit },
+			{
+				$project: {
+					_id: 1, // Keep the _id field
+					adminId: 1,
+					amount: 1,
+					createdAt: 1,
+					discountAmount: 1,
+					pay_type: 1,
+					soldUser:{
+						_id:"$soldDetails._id",
+						firstName:"$soldDetails.firstName",
+						lastName:"$soldDetails.lastName",
+
+					},
+					soliq: 1,
+					updatedAt: 1,
+				},
+			},
+		];
 		// Fetch payments with filters, sorting, and pagination
 		const [sold, soldLength] = await Promise.all([
-			Sold.find(query)
-				.skip(limit * currentPage)
-				.limit(limit)
-				.sort(sortOptions),
+			Sold.aggregate(pipeline),
 			Sold.countDocuments(query),
 		]);
+
 
 		// Send response
 		res.json({
@@ -99,7 +139,7 @@ sold.create = async (req, res) => {
 				message: "Goods and Amount not founded"
 			})
 		}
-		let newSold = await Sold.create({ ...req.body, sold: req.user.id })
+		let newSold = await Sold.create({ ...req.body, sold: req.user.id ,adminId: req.user.adminId})
 
 		req.body.goods.forEach(async good => {
 			let dbGood = await Good.findById(good._id)

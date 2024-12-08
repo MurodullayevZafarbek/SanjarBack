@@ -5,8 +5,7 @@ exports.index = async (req, res) => {
 	try {
 
 		// Destructure query parameters with default values
-		let { currentPage = 0, limit = 10, archived = false, sort, eq } = req.query;
-
+		let { currentPage = 0, limit = 10, archived, sort, eq } = req.query;
 		currentPage = parseInt(currentPage);
 		limit = parseInt(limit);
 
@@ -14,8 +13,8 @@ exports.index = async (req, res) => {
 		let workers = await User.findById(req.user.id)
 		workers = workers.worker
 
-		let query = { role: "worker", archived, _id: { $in: workers } };
-
+		let query = { role: "worker", _id: { $in: workers } };
+		if(archived || archived == false) query.archived = archived
 		// Apply equality filters using RegEx (case-insensitive)
 		if (eq) {
 			const filters = Array.isArray(eq) ? eq : [eq]; // Ensure eq is an array
@@ -36,7 +35,7 @@ exports.index = async (req, res) => {
 
 		// Query the database for paginated, filtered, and sorted results
 		const [users, userLength] = await Promise.all([
-			User.find(query, "firstName lastName email phoneNumber region createdAt")
+			User.find(query, "firstName lastName email phoneNumber region createdAt archived")
 				.skip(limit * currentPage)
 				.limit(limit)
 				.sort(sortOptions),
@@ -152,12 +151,12 @@ exports.remove = async (req, res) => {
 }
 exports.update = async (req, res) => {
 	try {
-		const { firstName, lastName, email, phoneNumber, region } = req.body;
+		const { firstName, lastName, email, phoneNumber,archived, region } = req.body;
 
 		// Find the user by ID and update the provided fields
 		const user = await User.findByIdAndUpdate(
 			req.params.id,
-			{ firstName, lastName, email, phoneNumber, region },
+			{ firstName, lastName, email, phoneNumber, region,archived },
 			{ new: true, runValidators: true } // Return the updated document and run validation
 		);
 
