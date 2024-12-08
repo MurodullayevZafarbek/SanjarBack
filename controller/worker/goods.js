@@ -250,7 +250,8 @@ exports.update = async (req, res) => {
 		}
 
 		// Check if plu exists if goodType is "kg"
-		if (good.goodType === "kg") {
+
+		if (good.goodType === "kg" && req.body.plu) {
 			const existingPlu = await Good.findOne({ plu, _id: { $ne: req.params.id }, adminId: req.user.adminId });
 			if (existingPlu) {
 				return res.status(200).json({
