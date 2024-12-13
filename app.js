@@ -25,7 +25,6 @@ mongoose.connect(process.env.DB)
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
-console.log();
 
 const corsOptions = {
     origin: process.env.cors.split(";"), // Allowed origins

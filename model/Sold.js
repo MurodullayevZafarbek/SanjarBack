@@ -25,19 +25,23 @@ module.exports = model("Sold", new Schema({
     },
     sold: {
         type: Schema.ObjectId,
-        ref:"User",
+        ref: "User",
         require: true,
     },
     adminId: {
         type: Schema.ObjectId,
-        ref:"User",
+        ref: "User",
     },
     goods: [
         {
-            good_id: { type: Schema.ObjectId },
+            good_id: {
+                type: Schema.ObjectId,
+                ref: "Good"
+            },
             count: Number,
             weight: Number,
-            price: Number,
+            wholesale_price: Number,
+            realPrice: Number,
         }
     ],
     amount: {

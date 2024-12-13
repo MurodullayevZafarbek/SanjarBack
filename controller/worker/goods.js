@@ -189,8 +189,6 @@ exports.create = async (req, res) => {
 
 		if (goodType == "kg") {
 			if (plu.length == 0) {
-				console.log(1);
-
 				return res.json({
 					status: false,
 					message: "PlU need to kg Goods"
