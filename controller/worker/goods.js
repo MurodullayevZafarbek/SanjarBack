@@ -89,9 +89,13 @@ exports.barcode = async (req, res) => {
 }
 exports.plu = async (req, res) => {
 	try {
+		let query = {
+			goodType: "kg"
+		}
+		req.query.adminId = req.user.adminId
 		const [goods, goodsLength] = await Promise.all([
 			Good.aggregate([
-				{ $match: { goodType: "kg", adminId: req.user.adminId } },
+				{ $match: query },
 				{
 					$project: {
 						title: 1,
@@ -123,8 +127,8 @@ exports.quicGood = async (req, res) => {
 	try {
 		const goods = await Good.find({
 			quicGood: { $exists: true }, // Check if `quicGood` exists
-			adminId:req.user.adminId, // Match adminId with the current user's adminId
-		},["quicGood","wholesale_price","title","barcode"]);
+			adminId: req.user.adminId, // Match adminId with the current user's adminId
+		}, ["quicGood", "wholesale_price", "title", "barcode"]);
 		const goodsLength = await Good.countDocuments({
 			quicGood: { $exists: true }, // Count only documents where `quicGood` exists
 			adminId: req.user.adminId,  // Match adminId to the current user's adminId
