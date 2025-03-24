@@ -15,6 +15,7 @@ const {
     barcode,
     quicGood} = require("../controller/worker/goods");
 const sold = require("../controller/worker/sold");
+const loan = require("../controller/worker/loan");
 const incomeGood = require("../controller/worker/incomeGood");
 const { dashboard } = require("../controller/admin/admin");
 const returnSold = require("../controller/worker/returnSold");
@@ -48,5 +49,13 @@ router.get("/good/returnSold/:id", returnSold.show)
 router.get("/good/income", incomeGood.index)
 router.post("/good/income", incomeGood.create)
 router.get("/good/income/:id", incomeGood.show)
+
+router.get("/loan", loan.index)
+router.put("/loan/addLoan", loan.addLoan)
+router.put("/loan/addPayment", loan.addPayment)
+router.get("/loan/:id", loan.show)
+router.put("/loan/:id", loan.update)
+router.delete("/loan/:id", loan.remove)
+router.post("/loan", loan.create)
 
 module.exports = router

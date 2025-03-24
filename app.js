@@ -6,7 +6,6 @@ const cors = require('cors');
 require('dotenv').config();
 const cookieParser = require('cookie-parser');
 
-
 // Use cookie-parser middleware
 const { superAdmin, admin, worker } = require('./middleware/checkStatus');
 const { limitAdmin, limitWorker } = require('./middleware/isLimit');

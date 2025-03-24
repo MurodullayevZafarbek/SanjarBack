@@ -5,30 +5,52 @@ module.exports = model("returnSold", new Schema({
         type: String,
         default: "User"
     },
-    pay_type: {
-        type: String,
-        enum: ["card", "cash", "account"],
-        default: "cash"
+    payment: {
+        cash: {
+            type: Number,
+            default: 0,
+        },
+        card: {
+            type: Number,
+            default: 0,
+        },
+        humo: {
+            type: Number,
+            default: 0,
+        },
+        uzcard: {
+            type: Number,
+            default: 0,
+        },
+        qarz: {
+            type: Number,
+            default: 0,
+        }
+    },
+    amount: {
+        type: Number,
+        require: true,
+    },
+    returnAmount: {
+        type: Number,
+        require: true,
     },
     sale_type: {
         type: String,
         enum: ["boxed", "wholesale"],
         default: "wholesale"
     },
-    returnSold:{
+    returnSold: {
         type: Schema.ObjectId,
+        ref: "Sold",
         require: true,
     },
     goods: [
         {
-            good_id: { type: Schema.ObjectId },
+            good_id: { type: Schema.ObjectId,ref: "Good"},
             count: Number,
             weight: Number,
             price: Number,
         }
     ],
-    amount: {
-        type: Number,
-        require:true,
-    }
 }, { timestamps: true }))

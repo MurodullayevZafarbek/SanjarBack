@@ -5,10 +5,39 @@ module.exports = model("Sold", new Schema({
         type: String,
         default: "User"
     },
-    pay_type: {
-        type: String,
-        enum: ["card", "cash", "humo", "uzcard", "qarz"],
-        default: "cash"
+    payment: {
+        cash: {
+            type: Number,
+            default: 0,
+        },
+        perevod: {
+            type: Number,
+            default: 0,
+        },
+        humo: {
+            type: Number,
+            default: 0,
+        },
+        uzcard: {
+            type: Number,
+            default: 0,
+        },
+        qarz: {
+            type: Number,
+            default: 0,
+        }
+    },
+    amount: {
+        type: Number,
+        require: true,
+    },
+    returnAmount: {
+        type: Number,
+        require: true,
+    },
+    discauntAmount: {
+        type: Number,
+        default: 0
     },
     sale_type: {
         type: String,
@@ -18,10 +47,6 @@ module.exports = model("Sold", new Schema({
     soliq: {
         type: Boolean,
         default: false,
-    },
-    discauntAmount: {
-        type: Number,
-        default: 0
     },
     sold: {
         type: Schema.ObjectId,
@@ -43,9 +68,5 @@ module.exports = model("Sold", new Schema({
             wholesale_price: Number,
             realPrice: Number,
         }
-    ],
-    amount: {
-        type: Number,
-        require: true,
-    }
+    ]
 }, { timestamps: true }))

@@ -198,7 +198,7 @@ exports.create = async (req, res) => {
 					message: "PlU need to kg Goods"
 				})
 			}
-			let goodPLu = await Good.findOne({ plu })
+			let goodPLu = await Good.findOne({ plu, adminId: req.user.adminId })
 			if (goodPLu) {
 				return res.json({
 					status: false,

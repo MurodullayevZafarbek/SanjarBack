@@ -16,7 +16,7 @@ sold.index = async (req, res) => {
 			const userIdsArray = soldId.split(",");
 			query.sold = { $in: userIdsArray };
 		}
-		
+
 		// Filter by paymentSum
 		if (amount) {
 			const [min, max] = amount.split('-');
@@ -82,10 +82,10 @@ sold.index = async (req, res) => {
 					createdAt: 1,
 					discountAmount: 1,
 					pay_type: 1,
-					soldUser:{
-						_id:"$soldDetails._id",
-						firstName:"$soldDetails.firstName",
-						lastName:"$soldDetails.lastName",
+					soldUser: {
+						_id: "$soldDetails._id",
+						firstName: "$soldDetails.firstName",
+						lastName: "$soldDetails.lastName",
 
 					},
 					soliq: 1,
@@ -129,7 +129,7 @@ sold.show = async (req, res) => {
 }
 sold.create = async (req, res) => {
 	try {
-		let { name, goods, pay_type, sale_type, soliq, discauntAmaunt, amount } = req.body
+		let { name, goods, payment, sale_type, soliq, discauntAmaunt, amount, returnAmount } = req.body
 		if (
 			((goods == null ?? undefined) || goods.length == 0) ||
 			((amount == null ?? undefined) || amount == 0)
@@ -139,7 +139,7 @@ sold.create = async (req, res) => {
 				message: "Goods and Amount not founded"
 			})
 		}
-		let newSold = await Sold.create({ ...req.body, sold: req.user.id ,adminId: req.user.adminId})
+		let newSold = await Sold.create({ ...req.body, sold: req.user.id, adminId: req.user.adminId })
 
 		req.body.goods.forEach(async good => {
 			let dbGood = await Good.findById(good._id)
@@ -151,7 +151,7 @@ sold.create = async (req, res) => {
 					dbGood.save()
 				} else if (dbGood.goodType == "kg") {
 					weight = dbGood.weight
-					dbGood.weight = (weight - good.weight/ 10000).toFixed(2)
+					dbGood.weight = (weight - good.weight / 10000).toFixed(2)
 					dbGood.save()
 				}
 				else {
@@ -162,7 +162,6 @@ sold.create = async (req, res) => {
 				}
 			}
 
-
 		// 	// let updGood = await Good.findByIdAndUpdate(good.good_id, { count: combinedColors })
 		});
 		// res.json({
@@ -171,6 +170,7 @@ sold.create = async (req, res) => {
 		// })
 		res.json({
 			status: false,
+			data: newSold,
 			message: "Good Solded successfully"
 		})
 	} catch (e) {
