@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 // Use cookie-parser middleware
 const { superAdmin, admin, worker } = require('./middleware/checkStatus');
 const { limitAdmin, limitWorker } = require('./middleware/isLimit');
+const { barcodeAndUserId } = require('./controller/worker/goods');
 require('dotenv').config();
 
 const app = express();
@@ -45,6 +46,7 @@ app.get("/", async (req, res) => {
     })
 })
 app.use("/mxik", require("./router/mxik"))
+app.use("/getMaxsulot/:barcode/:adminId", barcodeAndUserId)
 
 app.use("/superadmin", token, superAdmin, require("./router/superAdmin"))
 app.use("/admin", token, limitAdmin, admin, require("./router/admin"))

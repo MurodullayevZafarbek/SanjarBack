@@ -87,6 +87,28 @@ exports.barcode = async (req, res) => {
 		})
 	}
 }
+exports.barcodeAndUserId = async (req, res) => {
+	try {
+		let good = await Good.findOne({ barcode: req.params.barcode, adminId: req.params.adminId });
+		if (!good) {
+			res.json({
+				status: false,
+				message: "Barcode and UserId not exist",
+			})
+		} else {
+			res.json({
+				status: true,
+				message: "Good",
+				good
+			})
+		}
+	} catch (error) {
+		res.status(500).json({
+			status: true,
+			message: "Dasturchi bilan bo`g`laning",
+		})
+	}
+}
 exports.plu = async (req, res) => {
 	try {
 		let query = {
