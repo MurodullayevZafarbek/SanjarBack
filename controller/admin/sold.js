@@ -117,6 +117,142 @@ sold.index = async (req, res) => {
 		});
 	}
 }
+sold.allGoods = async (req, res) => {
+	try {
+		let { currentPage = 0, limit = 10, sort, eq, soldId, amount, createdAt } = req.query;
+
+		currentPage = parseInt(currentPage);
+		limit = parseInt(limit);
+
+		// Base query
+		let query = { ...req.body, adminId: new Types.ObjectId(req.user.id), };
+		// Filter by user IDs if provided
+		if (soldId) {
+			const userIdsArray = soldId.split(",");
+			query.sold = { $in: userIdsArray };
+		}
+
+		// Filter by paymentSum
+		if (amount) {
+			const [min, max] = amount.split('-');
+			query.amount = {};
+			if (min) query.amount.$gte = parseInt(min);
+			if (max) query.amount.$lte = parseInt(max);
+		}
+
+		// Filter by createdAt range
+		if (createdAt) {
+			const [minDate, maxDate] = createdAt.split('-');
+			query.createdAt = {};
+			if (minDate) query.createdAt.$gte = new Date(minDate);
+			if (maxDate) query.createdAt.$lte = new Date(maxDate);
+		}
+
+		// Apply equality filters (eq can be array or single string)
+		if (eq) {
+			const filters = Array.isArray(eq) ? eq : [eq];
+			filters.forEach(filter => {
+				const [field, value] = filter.split('.');
+				if (field && value) {
+					query[field] = { $regex: value, $options: 'i' };
+				}
+			});
+		}
+
+		// Sorting options
+		let sortOptions = {};
+		if (sort) {
+			const [sortField, sortOrder] = sort.split('.');
+			sortOptions[sortField] = sortOrder === 'ABC' ? 1 : -1;
+		}
+
+		const pipeline = [
+			{ $match: query }, // Apply the base query filters
+			{ $unwind: { path: "$goods", preserveNullAndEmptyArrays: true } },
+
+			// Lookup to populate the 'sold' field with the 'User' details
+			{
+				$lookup: {
+					from: "goods", // The name of the collection you're populating from (User model)
+					localField: "goods._id", // Field in the Sold document
+					foreignField: "_id", // Field in the User collection (typically _id)
+					as: "goodDetails", // The name of the resulting array field
+				},
+			},
+			{
+				$addFields: {
+					goodDetail: { $arrayElemAt: ["$goodDetails", 0] }
+				}
+			},
+			{
+				$project: {
+					_id: "$goods._id",
+					amount: 1,
+					// Fields from embedded "goods" object in Sold document
+					wholesale_price: "$goods.wholesale_price",
+					price: "$goods.price",
+					count: "$goods.count",
+					weight: "$goods.weight",
+
+					// Fields from the first matched goodDetails (from goods collection)
+					title: "$goodDetail.title",
+					goodType: "$goodDetail.goodType",
+					realPrice: "$goodDetail.realPrice",
+				}
+			},
+			{
+				$group: {
+					_id: "$_id", // group by product
+					title: { $first: "$title" },
+					goodType: { $first: "$goodType" },
+					realPrice: { $first: "$realPrice" },
+					wholesale_price: { $first: "$wholesale_price" },
+
+					totalWeight: {
+						$sum: {
+							$cond: [{ $eq: ["$goodType", "kg"] }, "$weight", 0]
+						}
+					},
+					totalCount: {
+						$sum: {
+							$cond: [{ $eq: ["$goodType", "pcs"] }, "$count", 0]
+						}
+					},
+				}
+			},
+			// // Sort the results
+			{ $sort: sortOptions },
+			// Pagination
+			{ $skip: limit * currentPage },
+			{ $limit: limit },
+		];
+		// Fetch payments with filters, sorting, and pagination
+		const [sold, soldLength] = await Promise.all([
+			Sold.aggregate(pipeline),
+			Sold.countDocuments(query),
+		]);
+
+		console.log(sold);
+
+		// Send response
+		res.json({
+			status: true,
+			message: 'Payments fetched successfully',
+			options: {
+				soldLength,
+				currentPage,
+				limit,
+			},
+			sold,
+		});
+	} catch (err) {
+		res.status(500).json({
+			status: false,
+			message: 'Error retrieving payments',
+			error: err.message,
+		});
+	}
+}
 sold.show = async (req, res) => {
 	try {
 		const soldWithGoods = await Sold.aggregate([
@@ -166,7 +302,7 @@ sold.show = async (req, res) => {
 					amount: 1, // Include amount from the Sold document
 					goods: 1, // Include the goods array with merged details
 					pay_type: 1, // Include the goods array with merged details
-					updatedAt:1
+					updatedAt: 1
 				},
 			},
 		]);

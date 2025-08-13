@@ -26,6 +26,7 @@ router.put("/workers/:id", update)
 router.delete("/workers/:id", remove)
 
 router.get("/good/sold", sold.index)
+router.get("/good/soldAllGoods", sold.allGoods)
 router.get("/good/sold/:id", sold.show)
 
 router.get("/statistic/today", statistic.today)

@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
 
 const corsOptions = {
-    origin: process.env.cors.split(";"), // Allowed origins
+    origin: process?.env?.CORS?.split(";"), // Allowed origins
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
     credentials: true, // Allow cookies and authentication headers
     optionsSuccessStatus: 200        // Some legacy browsers choke on 204

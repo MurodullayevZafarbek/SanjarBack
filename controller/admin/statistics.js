@@ -139,15 +139,18 @@ statistic.today = async (req, res) => {
 				$group: {
 					_id: null, // Group all documents
 					totalAmount: { $sum: "$amount" }, // Sum all amounts
-					cardTotalAmount: {
-						$sum: {
-							$cond: [{ $eq: ["$pay_type", "card"] }, "$amount", 0],
-						},
+					totalTransaction: { $sum: 1 },
+					uzcardTotalAmount: {
+						$sum: "$payment.uzcard",
+					},
+					humoTotalAmount: {
+						$sum: "$payment.humo",
+					},
+					perevodTotalAmount: {
+						$sum: "$payment.perevod",
 					},
 					cashTotalAmount: {
-						$sum: {
-							$cond: [{ $eq: ["$pay_type", "cash"] }, "$amount", 0],
-						},
+						$sum: "$payment.cash",
 					},
 
 				},
@@ -156,7 +159,10 @@ statistic.today = async (req, res) => {
 				$project: {
 					_id: 0, // Exclude the `_id` field in the output
 					totalAmount: 1,
-					cardTotalAmount: 1,
+					totalTransaction: 1,
+					uzcardTotalAmount: 1,
+					humoTotalAmount: 1,
+					perevodTotalAmount: 1,
 					cashTotalAmount: 1,
 				},
 			},
@@ -178,8 +184,24 @@ statistic.today = async (req, res) => {
 					_id: null, // Group all documents
 					totalWeight: { $sum: "$goods.weight" }, // Sum weight of goods
 					totalCount: { $sum: "$goods.count" }, // Sum count of goods
-					totalWholesalePrice: { $sum: "$goods.wholesale_price" }, // Sum wholesale price
-					totalRealPrice: { $sum: "$goods.realPrice" }, // Sum real price
+					totalWholesalePrice: {
+						$sum: {
+							$cond: [
+								{ $eq: ["$goods.count", null] },
+								{ $multiply: ["$goods.wholesale_price", { $divide: ["$goods.weight", 10000] }] },
+								{ $multiply: ["$goods.wholesale_price", "$goods.count"] }
+							]
+						}
+					},
+					totalRealPrice: {
+						$sum: {
+							$cond: [
+								{ $eq: ["$goods.count", null] },
+								{ $multiply: ["$goods.realPrice", { $divide: ["$goods.weight", 10000] }] },
+								{ $multiply: ["$goods.realPrice", "$goods.count"] }
+							]
+						}
+					}
 
 				},
 			},
@@ -197,8 +219,11 @@ statistic.today = async (req, res) => {
 		const data = {
 			...{
 				totalAmount: 0,
-				cardTotalAmount: 0,
+				totalTransaction: 0,
 				cashTotalAmount: 0,
+				uzcardTotalAmount: 0,
+				humoTotalAmount: 0,
+				perevodTotalAmount: 0,
 				totalWeight: 0,
 				totalCount: 0,
 				totalWholesalePrice: 0,
@@ -213,9 +238,14 @@ statistic.today = async (req, res) => {
 			message: 'Payments and goods stats fetched successfully',
 			result: {
 				totalAmount: data.totalAmount,
-				cardTotalAmount: data.cardTotalAmount,
-				cashTotalAmount: data.cashTotalAmount,
-				totalWeight: data.totalWeight,
+				totalTransaction: data.totalTransaction,
+				paymentMethod: {
+					uzcard: data.uzcardTotalAmount,
+					humo: data.humoTotalAmount,
+					perevod: data.perevodTotalAmount,
+					cash: data.cashTotalAmount,
+				},
+				totalWeight: data.totalWeight / 10000,
 				totalCount: data.totalCount,
 				totalWholesalePrice: data.totalWholesalePrice,
 				totalRealPrice: data.totalRealPrice,
