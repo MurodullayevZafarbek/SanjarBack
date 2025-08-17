@@ -132,6 +132,7 @@ statistic.today = async (req, res) => {
 						$gte: startOfDay, // Match documents created after or at midnight
 						$lte: endOfDay,   // Match documents created before or at end of the day
 					},
+					adminId: new Types.ObjectId(req.user.id)
 				},
 			},
 
@@ -174,6 +175,7 @@ statistic.today = async (req, res) => {
 						$gte: startOfDay, // Match documents created after or at midnight
 						$lte: endOfDay,   // Match documents created before or at end of the day
 					},
+					adminId: new Types.ObjectId(req.user.id)
 				},
 			},
 			{
