@@ -119,10 +119,12 @@ statistic.soldStatistic = async (req, res) => {
 }
 statistic.today = async (req, res) => {
 	try {
+		let { startDate, endDate } = req.query
 		// Get the start and end of the current day
-		const startOfDay = new Date();
+
+		const startOfDay = startDate ? new Date(startDate) : new Date();
 		startOfDay.setHours(0, 0, 0, 0); // Set to midnight
-		const endOfDay = new Date();
+		const endOfDay = endDate ? new Date(endDate) : new Date();
 		endOfDay.setHours(23, 59, 59, 999); // Set to end of the day
 
 		const result = await Sold.aggregate([
