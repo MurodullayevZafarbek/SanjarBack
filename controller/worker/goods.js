@@ -40,7 +40,7 @@ exports.index = async (req, res) => {
 
 		// Query the database for paginated, filtered, and sorted results
 		const [users, userLength] = await Promise.all([
-			Good.find(query, "barcode title realPrice wholesale_price count weight goodType plu archived")
+			Good.find(query, "barcode title realPrice wholesale_price count weight goodType plu archived updatedAt quicGood")
 				.skip(limit * currentPage)
 				.limit(limit)
 				.sort(sortOptions),

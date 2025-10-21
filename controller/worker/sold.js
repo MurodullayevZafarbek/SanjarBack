@@ -169,7 +169,7 @@ sold.create = async (req, res) => {
 		// 	message: "Good Solded successfully"
 		// })
 		res.json({
-			status: false,
+			status: true,
 			data: newSold,
 			message: "Good Solded successfully"
 		})
